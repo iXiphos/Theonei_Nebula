@@ -5,10 +5,12 @@
 #include "CoreMinimal.h"
 #include "ModBase.h"
 #include <vector>
+#include "NiagaraSystem.h"
 #include "Gun.generated.h"
 
 
 
+class UCameraComponent; 
 
 UCLASS()
 class RLFPS_API AGun : public AActor
@@ -19,7 +21,6 @@ class RLFPS_API AGun : public AActor
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AActor> ProjectileClass;
-
 	
 	
 
@@ -30,6 +31,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
 	void AddMod(UModBase* mod);
 	
 
@@ -42,6 +44,7 @@ public:
 	void OnHitCallback(AActor* actor);
 
 	void Fire(float deltaTime);
+	void Reload();
 	void SpawnRound(FActorSpawnParameters spawnParams);
 	void SpawnRound(FActorSpawnParameters spawnParams, FVector offset, FVector dir);
 
@@ -68,7 +71,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<UModBase>> allMods;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UNiagaraSystem* muzzleFlash;
 
 	/*************FUNCTIONAL VARIABLES************/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (MakeEditWidget = true))
@@ -84,28 +88,35 @@ public:
 	
 	/*************DEFAULT VALUES*************/
 	UPROPERTY(EditAnywhere, Category = "Game Stats")
-		float defaultReloadTime = 5;
+	float defaultReloadTime = 5;
 	UPROPERTY(EditAnywhere, Category = "Game Stats")
-		int defaultAmmoCount = 10;
+	int defaultAmmoCount = 10;
 	UPROPERTY(EditAnywhere, Category = "Game Stats")
-		int defaultRPM = 120;
+	int defaultRPM = 120;
 	UPROPERTY(EditAnywhere, Category = "Game Stats")
-		int defaultBulletSpeed = 120;
+	int defaultBulletSpeed = 120;
 	UPROPERTY(EditAnywhere, Category = "Game Stats")
-		float defaultDamage = 25;
+	float defaultDamage = 25;
+	UPROPERTY(EditAnywhere, Category = "Game Stats")
+	float reloadTimeModifierRate = 0.8;
+	UPROPERTY(EditAnywhere, Category = "Game Stats")
+	float rpmModifierRate = 1.5;
+	UPROPERTY(EditAnywhere, Category = "Game Stats")
+	float ammoModifierRate = 0.8;
 
 	/****************RUNTIME GUN STATS***************/
 	UPROPERTY(EditAnywhere, Category = "Gun Stats")
-		float reloadTime;
+	float reloadTime;
 	UPROPERTY(EditAnywhere, Category = "Gun Stats", BlueprintReadWrite)
-		int ammoCount;
+	int ammoCount;
 	UPROPERTY(EditAnywhere, Category = "Gun Stats")
-		float bulletSpeed;
+	float bulletSpeed;
 	UPROPERTY(EditAnywhere, Category = "Gun stats")
-		int rpm;
+	int rpm;
 	UPROPERTY(BlueprintReadWrite, Category = "Game Stats")
-		float Damage = 25;
-	int shotsPerRound = 1;
+	float Damage = 25;
+	//int shotsPerRound = 1;
+
 
 
 
@@ -119,6 +130,8 @@ public:
 	FKey OptionTwoKey;
 
 	UPROPERTY(BlueprintReadWrite)
+	int totalEXP;
+	UPROPERTY(BlueprintReadWrite)
 	int expToNextLevel = 5;
 	UPROPERTY(BlueprintReadWrite)
 	int currentEXP;
@@ -126,5 +139,21 @@ public:
 	bool readyToLevelUp = false;
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UModBase*> ModOptions;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float levelingRate = 1.5;
 
+
+
+
+	/*RETICLE RELATED THINGS*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UCameraComponent* camera;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float maxRaycastDistance = 2000;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float minRaycastDistance = 300;
+	UFUNCTION()
+	FVector RaycastFromCamera();
+
+	void LogFVector(FVector vector)  { UE_LOG(LogTemp, Warning, TEXT("X: %f  Y: %f  Z: %f"), vector.X, vector.Y, vector.Z); };
 };
